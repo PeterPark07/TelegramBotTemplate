@@ -1,11 +1,9 @@
 import os
 import telebot
-
-# Retrieve the token from the environment variable
-token = os.getenv('token')
+from helper.log import log
 
 # Create a new instance of the TeleBot class with the retrieved token
-bot = telebot.TeleBot(token)
+bot = telebot.TeleBot(os.getenv('bot_token'))
 
 # Handler for the '/start' command
 @bot.message_handler(commands=['start'])

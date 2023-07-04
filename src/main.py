@@ -1,9 +1,20 @@
 import os
+from flask import Flask, request
 import telebot
 from helper.log import log
 
-# Create a new instance of the TeleBot class with the retrieved token
-bot = telebot.TeleBot(os.getenv('bot_token'))
+app = Flask(__name__)
+bot = telebot.TeleBot(os.getenv('bot_token'), threaded=False)
+bot.set_webhook(url=os.getenv('webhook_url'))
+
+# Bot route to handle incoming messages
+@app.route('/bot', methods=['POST'])
+def telegram():
+    if request.headers.get('content-type') == 'application/json':
+        json_string = request.get_data().decode('utf-8')
+        update = telebot.types.Update.de_json(json_string)
+        bot.process_new_updates([update])
+        return 'OK', 200
 
 # Handler for the '/start' command
 @bot.message_handler(commands=['start'])
@@ -24,10 +35,3 @@ def help_command(message):
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
     bot.reply_to(message, message.text)
-
-# Start the bot and keep it running
-bot.infinity_polling()
-
-# The code execution reaches this point only if the bot is stopped or encounters an error
-# The bot will continuously listen for new messages and respond accordingly
-# You can terminate the program to stop the bot
